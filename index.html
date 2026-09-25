@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>无限冒险 · MergeFront: Endless — 二合拼装，守住废土防线</title>
+<meta name="description" content="两个合成一个，用拼装出来的战车扛住废土敌潮。10 章 50 关 380 波。纯广告变现，零内购。">
+<meta name="theme-color" content="#22262A">
+<link rel="icon" href="assets/icon-512.png">
+
+<style>
+/* ══════════════════════════════════════════════════════════════
+   无限冒险 / MergeFront: Endless —— 官网单页
+   设计方向：**废土军械面板**（industrial field-manual）
+     · 底色 = 烧黑钢板（品牌底色 #22262A），不是纯黑也不是渐变紫
+     · 强调 = 警示橙 #FA9000 / 琥珀 #F5C142 —— 工业警示带的两种颜色
+     · 字体 = 系统窄体/粗黑做标题（零外部依赖），等宽体做"技术读数"标签
+     · 细节 = 硬边 2px 描边、斜向警示条、噪点、铆钉角标（全部 CSS/SVG，无图片依赖）
+   零外部依赖：不引任何 CDN / 字体文件，双击 index.html 即可打开。
+   ══════════════════════════════════════════════════════════════ */
+
+:root{
+  --bg:#1b1e22;
+  --panel:#22262a;
+  --panel-2:#2a2f35;
+  --line:#3a4148;
+  --line-hi:#4d565f;
+  --ink:#eef1f5;
+  --ink-dim:#a6aeb8;
+  --ink-mute:#6f7883;
+  --ember:#fa9000;
+  --amber:#f5c142;
+  --rust:#a9542a;
+  --ok:#7bd88f;
+
+  --display:"Impact","Haettenschweiler","Arial Narrow Bold","Arial Black",
+            "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --body:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",
+         -apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+
+  --w:1140px;
+  --pad:clamp(18px,4vw,48px);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--body);line-height:1.7;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+
+/* 噪点 + 钢板纹理（纯 SVG / CSS，无外部文件） */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.16'/></svg>");
+  mix-blend-mode:overlay;
+}
+.wrap{position:relative;z-index:1;max-width:var(--w);margin:0 auto;padding:0 var(--pad)}
+
+/* ── 斜向警示条（工业带）── */
+.hazard{
+  height:14px;
+  background:repeating-linear-gradient(115deg,
+    var(--ember) 0 18px, #17191c 18px 36px);
+  border-top:2px solid #0d0f11;border-bottom:2px solid #0d0f11;
+}
+
+/* ── 顶栏 ── */
+header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(27,30,34,.9);backdrop-filter:blur(10px);
+  border-bottom:2px solid var(--line);
+}
+.bar{display:flex;align-items:center;gap:14px;height:62px}
+.bar img{width:34px;height:34px;image-rendering:pixelated}
+.bar .nm{font-family:var(--display);letter-spacing:.5px;font-size:19px}
+.bar .nm small{display:block;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:2.4px;color:var(--ink-mute);text-transform:uppercase}
+.bar .sp{flex:1}
+.lang{display:flex;border:2px solid var(--line);background:#17191c}
+.lang button{
+  font-family:var(--mono);font-size:11px;letter-spacing:1.4px;
+  padding:6px 11px;background:none;border:0;color:var(--ink-mute);cursor:pointer;
+}
+.lang button[aria-pressed="true"]{background:var(--ember);color:#17191c;font-weight:700}
+.btn{
+  display:inline-block;font-family:var(--mono);font-size:11.5px;letter-spacing:1.6px;
+  text-transform:uppercase;text-decoration:none;padding:9px 16px;cursor:pointer;
+  border:2px solid var(--ember);color:var(--ember);background:none;transition:.16s;
+}
+.btn:hover{background:var(--ember);color:#17191c}
+.btn.solid{background:var(--ember);color:#17191c;font-weight:700}
+.btn.solid:hover{background:var(--amber);border-color:var(--amber)}
+.btn.ghost{border-color:var(--line-hi);color:var(--ink-dim)}
+.btn.ghost:hover{background:var(--line-hi);color:var(--ink)}
+
+/* ── Hero ── */
+.hero{position:relative;padding:clamp(34px,6vw,74px) 0 clamp(30px,5vw,58px);overflow:hidden}
+.hero .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(20px,4vw,52px);align-items:center}
+.eyebrow{
+  display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--amber);
+  border-left:3px solid var(--ember);padding-left:10px;margin-bottom:18px;
+}
+h1{
+  font-family:var(--display);font-size:clamp(46px,8.4vw,92px);line-height:.94;
+  margin:0 0 6px;letter-spacing:1px;color:var(--amber);
+  text-shadow:3px 3px 0 #0d0f11, 6px 6px 0 rgba(250,144,0,.28);
+}
+h1 .en{display:block;font-size:.34em;letter-spacing:3.5px;color:var(--ink);
+  text-shadow:2px 2px 0 #0d0f11;margin-top:10px}
+.lede{font-size:clamp(15px,1.9vw,18.5px);color:var(--ink-dim);max-width:44ch;margin:18px 0 26px}
+.lede b{color:var(--ink);font-weight:600}
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--ink-mute);border:1px solid var(--line);padding:4px 9px;background:#1e2226}
+.tag i{color:var(--ok);font-style:normal}
+
+/* 主视觉：硬边相框 + 铆钉角
+   assets/hero.jpg 由 Tools/make_site_shots.py 从海报中段裁出：只保留纯实机画面，
+   已切掉海报自带的标题带与底部品牌条，免得和 H1 抢标题、也免得和角标口径打架。 */
+.shot{position:relative;transform:rotate(1.1deg);max-width:520px;margin-left:auto}
+.shot .frame{
+  border:3px solid #0d0f11;outline:2px solid var(--line-hi);
+  box-shadow:18px 18px 0 rgba(0,0,0,.45);
+  background:#0d0f11;overflow:hidden;
+}
+.shot img{display:block;width:100%;height:auto}
+.shot .plate{
+  position:absolute;left:-14px;bottom:26px;transform:rotate(-3deg);
+  font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  background:var(--ember);color:#17191c;padding:6px 12px;font-weight:700;
+  border:2px solid #0d0f11;
+}
+
+/* ── 数据条（技术读数）── */
+.spec{border-top:2px solid var(--line);border-bottom:2px solid var(--line);background:#1e2226}
+.spec ul{display:grid;grid-template-columns:repeat(6,1fr);margin:0;padding:0;list-style:none}
+.spec li{padding:20px 14px;border-left:1px solid var(--line);text-align:center}
+.spec li:first-child{border-left:0}
+.spec b{display:block;font-family:var(--display);font-size:clamp(26px,3.6vw,40px);
+  color:var(--amber);line-height:1;letter-spacing:1px}
+.spec span{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;
+  text-transform:uppercase;color:var(--ink-mute)}
+
+/* ── 通用区块 ── */
+section{padding:clamp(46px,7vw,92px) 0;position:relative}
+h2{font-family:var(--display);font-size:clamp(28px,4.4vw,46px);letter-spacing:1px;
+  margin:0 0 10px;color:var(--ink);text-shadow:2px 2px 0 #0d0f11}
+h2 em{font-style:normal;color:var(--ember)}
+.sub{color:var(--ink-dim);max-width:60ch;margin:0 0 34px}
+.kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--ink-mute);margin-bottom:12px}
+
+/* 核心循环：手册式编号列表 */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.step{background:var(--panel);border:2px solid var(--line);padding:24px 22px 26px;position:relative}
+.step::after{content:"";position:absolute;inset:5px;border:1px solid rgba(255,255,255,.045);pointer-events:none}
+.step .no{font-family:var(--display);font-size:46px;line-height:1;color:var(--ember);opacity:.9}
+.step h3{font-size:19px;margin:12px 0 8px;letter-spacing:.4px}
+.step p{margin:0;color:var(--ink-dim);font-size:14.5px}
+.step .note{margin-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:1.3px;
+  text-transform:uppercase;color:var(--ink-mute);border-top:1px dashed var(--line);padding-top:10px}
+
+/* 画廊：横向滚动 */
+.gallery{display:flex;gap:18px;overflow-x:auto;padding:6px 4px 22px;scroll-snap-type:x mandatory}
+.gallery figure{margin:0;flex:0 0 auto;scroll-snap-align:center}
+.gallery img{display:block;width:clamp(210px,25vw,268px);height:auto;
+  border:2px solid #0d0f11;outline:1px solid var(--line-hi);
+  box-shadow:10px 10px 0 rgba(0,0,0,.4);transition:transform .2s}
+.gallery figure:hover img{transform:translateY(-6px)}
+.gallery figcaption{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--ink-mute);margin-top:12px;text-align:center}
+
+/* 广告立场：大陈述面板 */
+.stance{border:2px solid var(--ember);background:
+  linear-gradient(180deg,rgba(250,144,0,.09),rgba(250,144,0,.02)),var(--panel);padding:clamp(26px,4vw,46px)}
+.stance h2{color:var(--amber)}
+.stance .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:26px}
+.stance .cols div{border-left:3px solid var(--ember);padding-left:16px}
+.stance .cols h4{margin:0 0 6px;font-size:15.5px;letter-spacing:.3px}
+.stance .cols p{margin:0;color:var(--ink-dim);font-size:14px}
+.rule{font-family:var(--mono);font-size:11px;letter-spacing:1.6px;text-transform:uppercase;
+  color:var(--ember);margin-top:28px;border-top:1px solid rgba(250,144,0,.35);padding-top:16px}
+
+/* 下载 */
+.dl{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(20px,4vw,50px);align-items:center}
+.dl .box{border:2px dashed var(--line-hi);padding:24px;background:#1e2226}
+.dl .box .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.dl .icon{width:132px;height:132px;image-rendering:pixelated;float:left;margin:0 20px 8px 0;
+  filter:drop-shadow(6px 6px 0 rgba(0,0,0,.45))}
+.fine{font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;color:var(--ink-mute);
+  text-transform:uppercase;margin-top:16px}
+
+/* 页脚 */
+footer{border-top:2px solid var(--line);padding:30px 0 46px;background:#17191c}
+footer .row{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+footer a{color:var(--ink-dim);text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:1.3px}
+footer a:hover{color:var(--ember)}
+footer .cp{font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;color:var(--ink-mute)}
+
+/* ── 进场动画 ── */
+.rise{opacity:0;transform:translateY(22px);animation:rise .72s cubic-bezier(.2,.75,.25,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+.d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.27s}.d4{animation-delay:.38s}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .6s,transform .6s}
+.reveal.in{opacity:1;transform:none}
+
+/* 语言切换：只显示当前语言 */
+html[data-lang="zh"] [data-en]{display:none !important}
+html[data-lang="en"] [data-zh]{display:none !important}
+
+/* ── 响应式 ── */
+@media (max-width:920px){
+  .hero .grid,.dl{grid-template-columns:1fr}
+  .shot{transform:none;max-width:420px}
+  .spec ul{grid-template-columns:repeat(3,1fr)}
+  .spec li:nth-child(4){border-left:0}
+  .steps,.stance .cols{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .spec ul{grid-template-columns:repeat(2,1fr)}
+  .spec li:nth-child(3){border-left:0}
+  .bar .nm small{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+  .rise,.reveal{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <img src="assets/logo-mark.png" alt="">
+    <div class="nm">
+      <span data-zh>无限冒险</span><span data-en>MergeFront: Endless</span>
+      <small data-zh>MergeFront: Endless</small><small data-en>二合塔防 · 废土防线</small>
+    </div>
+    <div class="sp"></div>
+    <div class="lang" role="group" aria-label="Language">
+      <button id="btnZh" aria-pressed="true" onclick="setLang('zh')">中文</button>
+      <button id="btnEn" aria-pressed="false" onclick="setLang('en')">EN</button>
+    </div>
+    <a class="btn solid" href="#download" data-zh>立即下载</a>
+    <a class="btn solid" href="#download" data-en>Download</a>
+  </div>
+</header>
+
+<div class="hazard" aria-hidden="true"></div>
+
+<!-- ═══ Hero ═══ -->
+<div class="hero">
+  <div class="wrap grid">
+    <div>
+      <span class="eyebrow rise d1" data-zh>16-bit 二合塔防 · 废土防线</span>
+      <span class="eyebrow rise d1" data-en>16-bit merge tower defense</span>
+      <h1 class="rise d2">
+        <span data-zh>无限冒险</span><span data-en>MERGE FRONT</span>
+        <span class="en" data-zh>MERGE FRONT: ENDLESS</span>
+        <span class="en" data-en>ENDLESS</span>
+      </h1>
+      <p class="lede rise d3" data-zh>
+        两个合成一个。十个变五个，五个变两个 —— 最后剩下的那一辆，
+        要扛住整波敌潮。<b>10 章 50 关 380 波</b>，每一波都是一次新的赌注。
+      </p>
+      <p class="lede rise d3" data-en>
+        Merge two into one. Ten become five, five become two — and whatever is left
+        has to survive the whole wave. <b>10 chapters, 50 stages, 380 waves</b>,
+        and every wave is a new bet.
+      </p>
+      <div class="cta rise d4">
+        <a class="btn solid" href="#download" data-zh>App Store 下载</a>
+        <a class="btn solid" href="#download" data-en>Get it on the App Store</a>
+        <a class="btn ghost" href="#loop" data-zh>看看怎么玩</a>
+        <a class="btn ghost" href="#loop" data-en>How it plays</a>
+      </div>
+      <div class="tags rise d4">
+        <span class="tag"><i>✓</i> <span data-zh>零内购</span><span data-en>No IAP</span></span>
+        <span class="tag"><i>✓</i> <span data-zh>全程无强制广告</span><span data-en>No forced ads at all</span></span>
+        <span class="tag"><i>✓</i> <span data-zh>竖屏单手</span><span data-en>One-handed</span></span>
+        <span class="tag"><i>✓</i> <span data-zh>离线可玩</span><span data-en>Offline</span></span>
+      </div>
+    </div>
+    <div class="shot rise d3">
+      <div class="frame">
+        <img src="assets/hero.jpg" alt="Battle gameplay" width="980" height="1149">
+      </div>
+      <div class="plate" data-zh>实机画面 · 未做假</div>
+      <div class="plate" data-en>Real gameplay</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 数据条 ═══ -->
+<div class="spec">
+  <div class="wrap">
+    <ul>
+      <li><b>50</b><span data-zh>关卡</span><span data-en>Stages</span></li>
+      <li><b>380</b><span data-zh>波敌潮</span><span data-en>Waves</span></li>
+      <li><b>10</b><span data-zh>张地图</span><span data-en>Maps</span></li>
+      <li><b>59</b><span data-zh>种敌人</span><span data-en>Enemies</span></li>
+      <li><b>11</b><span data-zh>个兵种</span><span data-en>Units</span></li>
+      <li><b>8</b><span data-zh>座建筑</span><span data-en>Buildings</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ 核心循环 ═══ -->
+<section id="loop">
+  <div class="wrap">
+    <div class="kicker reveal" data-zh>核心循环</div>
+    <div class="kicker reveal" data-en>The loop</div>
+    <h2 class="reveal" data-zh>合成 · 强化 · <em>守塔</em></h2>
+    <h2 class="reveal" data-en>Merge · Upgrade · <em>Hold</em></h2>
+    <p class="sub reveal" data-zh>单局 3-8 分钟。10 秒一次合成决策，每一波之间抽三张强化选一张 —— 每一步都在赌这一波守不守得住。</p>
+    <p class="sub reveal" data-en>3-8 minute runs. One merge decision every 10 seconds, and one upgrade out of three between waves — every step is a bet on whether this wave holds.</p>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="no">01</div>
+        <h3 data-zh>二合拼装</h3><h3 data-en>Merge two into one</h3>
+        <p data-zh>两个同级单位合成一个更强的。合成树就是改装树 —— 往上合会分叉成不同流派，走哪条线由你定。</p>
+        <p data-en>Combine two units of the same tier into a stronger one. The merge tree is the upgrade tree: merging branches into different builds, and you pick the line.</p>
+        <div class="note" data-zh>决策节奏 · 10 秒一次</div>
+        <div class="note" data-en>Pace · one decision / 10s</div>
+      </div>
+      <div class="step reveal">
+        <div class="no">02</div>
+        <h3 data-zh>三选一强化</h3><h3 data-en>Pick 1 of 3</h3>
+        <p data-zh>每一波之间抽三张强化，选一张立刻生效。强化不重复、会叠层，越到后期越要取舍。</p>
+        <p data-en>Draw three upgrades between waves and keep one — it takes effect immediately. Upgrades stack, so late waves are all about trade-offs.</p>
+        <div class="note" data-zh>不满意可以看广告换一批</div>
+        <div class="note" data-en>Reroll with an optional ad</div>
+      </div>
+      <div class="step reveal">
+        <div class="no">03</div>
+        <h3 data-zh>扛住这一波</h3><h3 data-en>Hold the wave</h3>
+        <p data-zh>59 种敌人各有各的打法，从废土街区一路打到沙暴封锁。死了不冤 —— 每一局都能说清楚自己输在哪。</p>
+        <p data-en>59 enemy types that each fight differently, from Ruined Blocks to Sandstorm Lockdown. No unfair losses: you can always point at what went wrong.</p>
+        <div class="note" data-zh>无尽尸潮 · 波数无上限</div>
+        <div class="note" data-en>Endless horde · no wave cap</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 画廊 ═══ -->
+<section id="shots" style="padding-top:0">
+  <div class="wrap">
+    <div class="kicker reveal" data-zh>实机截图</div>
+    <div class="kicker reveal" data-en>Screenshots</div>
+    <h2 class="reveal" data-zh>全部取自真机画面</h2>
+    <h2 class="reveal" data-en>Straight from real gameplay</h2>
+    <p class="sub reveal" data-zh>横向滑动看更多。下面每一张都是游戏里直接截的，没有摆拍。</p>
+    <p class="sub reveal" data-en>Scroll sideways. Every frame below was captured in-game — nothing staged.</p>
+  </div>
+  <div class="wrap">
+    <div class="gallery" id="gallery"></div>
+  </div>
+</section>
+
+<!-- ═══ 广告立场 ═══ -->
+<section id="ads" style="padding-top:0">
+  <div class="wrap">
+    <div class="stance reveal">
+      <div class="kicker" data-zh>关于广告</div>
+      <div class="kicker" data-en>About ads</div>
+      <h2 data-zh>广告是加速器，<em>不是门票</em></h2>
+      <h2 data-en>Ads are a boost, <em>never a paywall</em></h2>
+      <div class="cols">
+        <div>
+          <h4 data-zh>全部可选</h4><h4 data-en>All optional</h4>
+          <p data-zh>失败复活、结算翻倍、强化换一批、领一份合金礼包 —— 四个位置全部可选，不看照样能通关。</p>
+          <p data-en>Revive after a loss, double your payout, reroll your upgrades, or claim a free alloy gift — all four are optional. You can clear every stage without watching one.</p>
+        </div>
+        <div>
+          <h4 data-zh>全程没有强制广告</h4><h4 data-en>No forced ads, ever</h4>
+          <p data-zh>启动、战斗、结算都不弹广告 —— 广告只在你自己点的时候出现，且单设备每天有次数上限。</p>
+          <p data-en>Nothing at launch, nothing in battle, nothing after a run — ads only appear when you tap, and there is a daily cap per device.</p>
+        </div>
+        <div>
+          <h4 data-zh>失败也有兜底</h4><h4 data-en>Failure still pays</h4>
+          <p data-zh>广告没加载出来时不让你白等：奖励按 70% 直接发放，入口在超限后自动隐藏。</p>
+          <p data-en>If an ad fails to load you still get paid: 70% of the reward is granted, and the entry hides itself once you hit the cap.</p>
+        </div>
+      </div>
+      <div class="rule" data-zh>零内购 · 一分钱都不用花</div>
+      <div class="rule" data-en>Zero in-app purchases · not a single cent</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 下载 ═══ -->
+<section id="download" style="padding-top:0">
+  <div class="wrap dl">
+    <div class="reveal">
+      <div class="kicker" data-zh>下载</div>
+      <div class="kicker" data-en>Download</div>
+      <h2 data-zh>竖屏单手，<em>随时开一局</em></h2>
+      <h2 data-en>Portrait, one-handed, <em>anytime</em></h2>
+      <p class="sub" data-zh>iOS 版已在 App Store 上架。中国大陆地区通过 TapTap 开放试玩。</p>
+      <p class="sub" data-en>Available now on the App Store. In mainland China, the game is in open playtest on TapTap.</p>
+      <div class="cta">
+        <a class="btn solid" href="#" data-zh>App Store 下载</a>
+        <a class="btn solid" href="#" data-en>Download on the App Store</a>
+        <a class="btn ghost" href="#" data-zh>TapTap 试玩</a>
+        <a class="btn ghost" href="#" data-en>TapTap playtest</a>
+      </div>
+      <div class="fine" data-zh>⚠ 两个按钮目前是占位链接，上架后替换为真实商店地址</div>
+      <div class="fine" data-en>⚠ Both buttons are placeholders — swap in the real store URLs after release</div>
+    </div>
+    <div class="reveal">
+      <div class="box">
+        <img class="icon" src="assets/icon-framed.png" alt="icon">
+        <div style="font-family:var(--display);font-size:26px;letter-spacing:1px" data-zh>无限冒险</div>
+        <div style="font-family:var(--display);font-size:26px;letter-spacing:1px" data-en>MergeFront: Endless</div>
+        <div class="fine" data-zh>二合 · 塔防 · 废土防线<br>iOS 9+ · 无内购 · 无需联网</div>
+        <div class="fine" data-en>Merge · Tower Defense · Wasteland<br>iOS 9+ · No IAP · Plays offline</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="hazard" style="position:absolute;left:0;right:0" aria-hidden="true"></div>
+  <div class="wrap row" style="margin-top:26px">
+    <span class="cp">© 2026 lhc · MergeFront: Endless</span>
+    <span>
+      <a href="#" data-zh>支持</a><a href="#" data-en>Support</a>
+      <span class="cp"> · </span>
+      <a href="#" data-zh>隐私政策</a><a href="#" data-en>Privacy</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+/* ── 语言切换（同一页，不刷新）──
+   所有可切换文本都用 data-zh / data-en 成对写在 DOM 里；
+   CSS 按 html[data-lang] 隐藏另一半，JS 只负责切属性 + 重建画廊。
+   persist=false 用于「URL 指定语言」——分享出去的链接不该改掉访客的本地偏好。 */
+function setLang(lang, persist){
+  document.documentElement.setAttribute('data-lang', lang);
+  document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
+  document.getElementById('btnZh').setAttribute('aria-pressed', lang === 'zh');
+  document.getElementById('btnEn').setAttribute('aria-pressed', lang === 'en');
+  if (persist !== false){ try { localStorage.setItem('endless.lang', lang); } catch(e){} }
+  buildGallery(lang);
+}
+
+/* ── 画廊：按语言生成（截图有 zh / en 两套海报）──
+   标题只写「序号 · 画面名」：海报图里已经烤进了各自的大字卖点，
+   figcaption 再复述一遍就是重复噪音。alt 用完整句子，兼顾无障碍。 */
+var SHOTS = [
+  ['01_brand',       '01 · 战斗',  '01 · Battle',   '战斗画面：废土街区，我方单位迎击敌潮'],
+  ['02_merge',       '02 · 强化',  '02 · Upgrade',  '强化界面：每波之间三选一'],
+  ['03_no-iap',      '03 · 结算',  '03 · Results',  '结算界面：纯广告变现，零内购'],
+  ['04_content',     '04 · 关卡',  '04 · Stages',   '关卡选择：10 张地图 50 个关卡'],
+  ['05_progression', '05 · 营地',  '05 · Camp',     '营地界面：8 座可升级建筑'],
+  ['06_tactics',     '06 · 备战',  '06 · Prep',     '战前准备：部署单位，倒计时结束开打'],
+  ['07_revive',      '07 · 复活',  '07 · Revive',   '失败复活：看一段视频重新站起来']
+];
+function buildGallery(lang){
+  var box = document.getElementById('gallery');
+  var html = '';
+  for (var i = 0; i < SHOTS.length; i++){
+    var f = SHOTS[i];
+    var cap = (lang === 'zh') ? f[1] : f[2];
+    var alt = (lang === 'zh') ? f[3] : cap;
+    html += '<figure><img src="assets/shots/' + lang + '/' + f[0] + '.jpg" alt="' + alt +
+            '" width="660" height="1434" loading="lazy"><figcaption>' + cap + '</figcaption></figure>';
+  }
+  box.innerHTML = html;
+}
+
+/* ── 滚动进场（IntersectionObserver，尊重 prefers-reduced-motion）── */
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (reduce || !('IntersectionObserver' in window)){
+    els.forEach(function(e){ e.classList.add('in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, { rootMargin: '0px 0px -12% 0px', threshold: .12 });
+  els.forEach(function(e){ io.observe(e); });
+})();
+
+/* ── 初始语言：URL 参数 > 本地记忆 > 浏览器 ──
+   index.html?lang=en 可以直接分享英文版，且不写回 localStorage。 */
+(function(){
+  var q = null;
+  try { q = new URLSearchParams(location.search).get('lang'); } catch(e){}
+  if (q !== 'zh' && q !== 'en') q = null;
+  var saved = null;
+  try { saved = localStorage.getItem('endless.lang'); } catch(e){}
+  var lang = q || saved || ((navigator.language || 'zh').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en');
+  setLang(lang, !q);
+})();
+</script>
+</body>
+</html>
